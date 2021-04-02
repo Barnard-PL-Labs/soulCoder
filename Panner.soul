@@ -1,24 +1,26 @@
 graph Panner [[main]]
 {
-    input stream float in1;
-    input stream float in2;
+    input stream float in1; // Left in
+    input stream float in2; // Right in
 
-    output stream float out1;
-    output stream float out2;
+    output stream float out1; // Left out
+    output stream float out2; // Right out
     
     input
     {
-        mixer.mix  [[ name:"pan", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]];
+        // user parameter, it's called endpoint annotaion
+        // https://soul-lang.github.io/SOUL/docs/SOUL_Language.html#endpoint-annotations
+        mixer.mix  [[ name:"pan", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]]; 
     }
 
     let 
     {
+        //Mixer processor instance
         mixer = Mixer;
     } 
     
     connection
     {
-        
         in1 -> mixer.in1;
         in2 -> mixer.in2;
 
@@ -27,7 +29,7 @@ graph Panner [[main]]
     }
 }
 
-
+// Mixer processor take two input and mix them by the parameter value
 processor Mixer()
 {
     input stream float in1, in2;
@@ -52,6 +54,7 @@ processor Mixer()
 
 
 // referenced from SOUL/example/Resonator.soul
+// unused in Panner but I think it will likely be used later
 processor Values (float[] vals)
 {
     output event float out[vals.size];
