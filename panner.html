@@ -1,0 +1,24 @@
+<html>
+ <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="utf-8">
+ <title>SOUL Graph: Panner.soulpatch</title>
+ </head>
+ <style> body { font-size: 70%; font-family: sans-serif; display: inline-block; min-width: 100%; box-sizing: border-box; } </style>
+ <body><div id="graph_div"></div></body>
+
+ <script language="javascript" type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"> </script>
+ <script language="javascript" type="text/javascript" src="http://viz-js.com/bower_components/viz.js/viz.js"></script>
+
+ <script language="javascript" type="text/javascript">
+ jQuery(document).ready(function()
+ {
+   jQuery.ajaxSetup ({ error: function(resp, e) { alert('Error.\n' + resp.responseText); }});
+
+   jQuery(function()
+   {
+     var data = "digraph\n{\nsubgraph cluster__root { style=filled; color=\"#ffffff\"; fillcolor=\"#E1F2C2\"; label=<<FONT FACE=\"Courier\" POINT-SIZE=\"8\"><B>Panner</B></FONT>>\n _root_external_in_ [ shape=none, label=<<FONT FACE=\"Courier\" POINT-SIZE=\"8\"><TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\" CELLPADDING=\"0\"><TR><TD PORT=\"in1\" BORDER=\"1\" CELLPADDING=\"4\" COLOR=\"#000000\" BGCOLOR=\"#ccccee\">float32<BR></BR>in1</TD><TD WIDTH=\"5\"></TD><TD PORT=\"in2\" BORDER=\"1\" CELLPADDING=\"4\" COLOR=\"#000000\" BGCOLOR=\"#ccccee\">float32<BR></BR>in2</TD><TD WIDTH=\"5\"></TD><TD PORT=\"mix\" BORDER=\"1\" CELLPADDING=\"4\" COLOR=\"#000000\" BGCOLOR=\"#ccccee\">float32<BR></BR>mix</TD></TR></TABLE></FONT>> ];\n _root_external_out_ [ shape=none, label=<<FONT FACE=\"Courier\" POINT-SIZE=\"8\"><TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\" CELLPADDING=\"0\"><TR><TD PORT=\"out1\" BORDER=\"1\" CELLPADDING=\"4\" COLOR=\"#000000\" BGCOLOR=\"#bbddbb\">float32<BR></BR>out1</TD><TD WIDTH=\"5\"></TD><TD PORT=\"out2\" BORDER=\"1\" CELLPADDING=\"4\" COLOR=\"#000000\" BGCOLOR=\"#bbddbb\">float32<BR></BR>out2</TD></TR></TABLE></FONT>> ];\n mixer [ shape=none, label=<<FONT FACE=\"Courier\" POINT-SIZE=\"8\"><TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\" CELLPADDING=\"0\"><TR><TD BORDER=\"0\"><TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\" CELLPADDING=\"0\"><TR><TD WIDTH=\"20\"></TD><TD PORT=\"in1\" BORDER=\"1\" CELLPADDING=\"1\" COLOR=\"#000000\" BGCOLOR=\"#ccccee\">in1</TD><TD WIDTH=\"10\"></TD><TD PORT=\"in2\" BORDER=\"1\" CELLPADDING=\"1\" COLOR=\"#000000\" BGCOLOR=\"#ccccee\">in2</TD><TD WIDTH=\"10\"></TD><TD PORT=\"mix\" BORDER=\"1\" CELLPADDING=\"1\" COLOR=\"#000000\" BGCOLOR=\"#ccccee\">mix</TD><TD WIDTH=\"20\"></TD></TR></TABLE></TD></TR><TR><TD BORDER=\"1\" STYLE=\"ROUNDED\" CELLPADDING=\"4\" COLOR=\"#000000\" BGCOLOR=\"#dddddd\">Mixer<BR></BR>mixer</TD></TR><TR><TD BORDER=\"0\"><TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\" CELLPADDING=\"0\"><TR><TD WIDTH=\"20\"></TD><TD PORT=\"out1\" BORDER=\"1\" CELLPADDING=\"1\" COLOR=\"#000000\" BGCOLOR=\"#bbddbb\">out1</TD><TD WIDTH=\"10\"></TD><TD PORT=\"out2\" BORDER=\"1\" CELLPADDING=\"1\" COLOR=\"#000000\" BGCOLOR=\"#bbddbb\">out2</TD><TD WIDTH=\"20\"></TD></TR></TABLE></TD></TR></TABLE></FONT>> ];\n}\n\n\n _root_external_in_:in1:s -> mixer:in1:n;\n _root_external_in_:in2:s -> mixer:in2:n;\n mixer:out1:s -> _root_external_out_:out1:n;\n mixer:out2:s -> _root_external_out_:out2:n;\n _root_external_in_:mix:s -> mixer:mix:n;\n\n}\n";
+     var svg_div = jQuery('#graph_div');
+     svg_div.html("<hr>" + Viz(data, "svg"));
+   });
+ });
+ </script>
+</html>

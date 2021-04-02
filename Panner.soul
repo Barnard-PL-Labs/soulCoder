@@ -1,0 +1,67 @@
+graph Panner [[main]]
+{
+    input stream float in1;
+    input stream float in2;
+
+    output stream float out1;
+    output stream float out2;
+    
+    input
+    {
+        mixer.mix  [[ name:"pan", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]];
+    }
+
+    let 
+    {
+        mixer = Mixer;
+    } 
+    
+    connection
+    {
+        
+        in1 -> mixer.in1;
+        in2 -> mixer.in2;
+
+        mixer.out1 -> out1;
+        mixer.out2 -> out2;
+    }
+}
+
+
+processor Mixer()
+{
+    input stream float in1, in2;
+    input stream float mix;
+
+    output stream float out1, out2;
+    
+    void run()
+    {
+        loop
+        {
+            let in2_gain = soul::dBtoGain( 10 * log(mix/100.0f) ); //percent -> dB -> gain
+            let in1_gain = 1.0f - in2_gain;
+
+            out1 << (in1 * in1_gain);
+            out2 << (in2 * in2_gain);
+
+            advance();
+        }
+    }
+}
+
+
+// referenced from SOUL/example/Resonator.soul
+processor Values (float[] vals)
+{
+    output event float out[vals.size];
+
+    void run()
+    {
+        for (wrap<vals.size> i){
+            out[i] << vals[i];
+        }
+
+        advance();
+    }
+}
