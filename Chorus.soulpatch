@@ -1,0 +1,14 @@
+{
+    "soulPatchV1": {
+        "ID": "Chorus",
+        "version": "0.1",
+        "name": "Chorus",
+        "description": null,
+        "category": "effect",
+        "manufacturer": "soul-web-playground",
+        "isInstrument": false,
+        "source": [
+            "Chorus.soul"
+        ]
+    }
+}
