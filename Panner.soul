@@ -3,6 +3,7 @@ graph Panner [[main]]
     input stream float in1; // Left in
     input stream float in2; // Right in
 
+
     output stream float out1; // Left out
     output stream float out2; // Right out
     
@@ -67,4 +68,184 @@ processor Values (float[] vals)
 
         advance();
     }
+}
+
+
+processor FreqAnalysis ()
+{
+
+    input stream float instream;
+    output value frequencyBands bands;
+
+    struct frequencyBands
+    {
+        int b1;
+        int b2;
+        int b3;
+        int b4;
+        int b5;
+        
+        float g1;
+        float g2;
+        float g3;
+        float g4;
+        float g5;
+    }
+
+    frequencyBands fb;
+
+    int BAND1_LOWER = 0;
+    int BAND1_UPPER = 800;
+
+    int BAND2_LOWER = 600;
+    int BAND2_UPPER = 2140;
+
+    int BAND3_LOWER = 2250;
+    int BAND3_UPPER = 2900;
+
+    int BAND4_LOWER = 2450;
+    int BAND4_UPPER = 3900;
+
+    int BAND5_LOWER = 2900;
+    int BAND5_UPPER = 4950;
+
+
+
+
+
+
+    const int NUM_DFT_SAMPLES = 44100;
+
+    float[NUM_DFT_SAMPLES] inputReal;
+    float[NUM_DFT_SAMPLES] inputImag;
+    float[NUM_DFT_SAMPLES] outputReal;
+    float[NUM_DFT_SAMPLES] outputImag;
+    
+    float[NUM_DFT_SAMPLES] magnitudes;
+
+    wrap<NUM_DFT_SAMPLES> idx = 0;
+
+    void init() {
+        idx = 0;
+    }
+
+
+    void run() {
+
+        loop
+        {
+            inputReal[idx] = instream;
+            idx += 1;
+            
+            if (idx == NUM_DFT_SAMPLES) {
+                
+                //Do the DFT, results will be in outputReal, outputImag
+
+                soul::DFT::performComplex(inputReal, 
+                                          inputImag,
+                                          outputReal,
+                                          outputImag,
+                                          1.0f / float (NUM_DFT_SAMPLES));
+
+                //Compute the magnitudes
+
+                float re;
+                float im;
+                for (int i = 0; i < NUM_DFT_SAMPLES; ++i) {
+                    re = pow(outputReal[i], 2.0f);
+                    im = pow(outputImag[i], 2.0f);
+
+                    magnitudes[i] = pow(re+im, 0.5f);
+                }
+
+
+                //Find the highest frequency in each band
+
+                int curMaxFreq = BAND1_LOWER;
+                float curMaxGain = magnitudes[BAND1_LOWER];
+                
+                for (int freq = BAND1_LOWER; freq < BAND1_UPPER; ++freq) {
+                    
+                    if(magnitudes[freq] > curMaxGain) {
+                        curMaxFreq = freq;
+                        curMaxGain = magnitudes[freq];
+                    }
+
+                }
+
+                fb.b1 = curMaxFreq;
+                fb.g1 = curMaxGain;
+
+                curMaxFreq = BAND2_LOWER;
+                curMaxGain = magnitudes[BAND2_LOWER];
+                
+                for (int freq = BAND2_LOWER; freq < BAND2_UPPER; ++freq) {
+                    
+                    if(magnitudes[freq] > curMaxGain) {
+                        curMaxFreq = freq;
+                        curMaxGain = magnitudes[freq];
+                    }
+
+                }
+
+                fb.b2 = curMaxFreq;
+                fb.g2 = curMaxGain;
+
+
+                curMaxFreq = BAND3_LOWER;
+                curMaxGain = magnitudes[BAND3_LOWER];
+                
+                for (int freq = BAND3_LOWER; freq < BAND3_UPPER; ++freq) {
+                    
+                    if(magnitudes[freq] > curMaxGain) {
+                        curMaxFreq = freq;
+                        curMaxGain = magnitudes[freq];
+                    }
+
+                }
+
+                fb.b3 = curMaxFreq;
+                fb.g3 = curMaxGain;
+
+
+                curMaxFreq = BAND4_LOWER;
+                curMaxGain = magnitudes[BAND4_LOWER];
+                
+                for (int freq = BAND4_LOWER; freq < BAND4_UPPER; ++freq) {
+                    
+                    if(magnitudes[freq] > curMaxGain) {
+                        curMaxFreq = freq;
+                        curMaxGain = magnitudes[freq];
+                    }
+
+                }
+
+                fb.b4 = curMaxFreq;
+                fb.g4 = curMaxGain;
+
+
+                curMaxFreq = BAND5_LOWER;
+                curMaxGain = magnitudes[BAND5_LOWER];
+                
+                for (int freq = BAND5_LOWER; freq < BAND5_UPPER; ++freq) {
+                    
+                    if(magnitudes[freq] > curMaxGain) {
+                        curMaxFreq = freq;
+                        curMaxGain = magnitudes[freq];
+                    }
+
+                }
+
+                fb.b5 = curMaxFreq;
+                fb.g5 = curMaxGain;
+
+                bands << fb;
+            }
+
+
+
+            advance();
+        }
+    }
+
 }
