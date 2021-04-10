@@ -1,0 +1,15 @@
+
+{
+    "soulPatchV1":
+    {
+        "ID":               "com.yourcompany.Waveshaper",
+        "version":          "0.1",
+        "name":             "Waveshaper",
+        "description":      "This is a SOUL Patch called Waveshaper!",
+        "category":         "effect",
+        "manufacturer":     "Your Company Name",
+        "isInstrument":     false,
+
+        "source":           [ "Waveshaper.soul" ]
+    }
+}
