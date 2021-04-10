@@ -1,0 +1,25 @@
+graph LFOTester
+{
+    input stream float32 audioIn;
+    output stream float32 out;
+
+     
+    input osc.rateHzIn;
+    input osc.shapeIn;
+    input osc.depthIn;
+    input osc.positionIn;
+    input osc.transportStateIn;
+    input osc.tempoIn;
+    input osc.rateModeIn;
+    input osc.syncIn;
+    input osc.polarityIn;
+
+    namespace LFO = soul::oscillators::lfo;
+
+    let osc = LFO::Processor (LFO::Shape::triangle, LFO::Polarity::unipolar, 1., 10.);
+
+    connection
+    {
+        osc.out              -> out;
+    }
+}
