@@ -1,5 +1,7 @@
 graph Panner [[main]]
 {
+    namespace eq = soul::filters(float)::tpt::simper_eq;
+
     input stream float in1; // Left in
     input stream float in2; // Right in
 
@@ -18,15 +20,30 @@ graph Panner [[main]]
     {
         //Mixer processor instance
         mixer = Mixer;
-    } 
+        
+        eq1 = eq::Processor;
+        freqAnlyzer = FreqAnalysis;
+
+        eq_mode = Values(float[] (2)); //bandpass filter
+        eq_q = Values(float[] (10.0f));
+    }
     
     connection
     {
+        in1 -> freqAnlyzer.in1;
+        
         in1 -> mixer.in1;
         in2 -> mixer.in2;
 
+        eq_mode.out -> eq1.modeIn;
+        eq_q.out -> eq1.qualityIn;
+
+        freq -> eq1.frequencyIn;
+        gain -> eq1.gainIn;
+
         mixer.out1 -> out1;
         mixer.out2 -> out2;
+
     }
 }
 
