@@ -1,7 +1,7 @@
 graph TopLevel [[main]]
 {
-    input stream float audioIn;
-    output stream float audioOut;
+    input stream float<2> audioIn;
+    output stream float<2> audioOut;
     input event
     {
         float rateHzIn   [[ min: 0.1,  max: 20,  init:  10,  name: "LFO Rate",  unit: "hz",  step: 0.1 ]];
@@ -23,11 +23,11 @@ graph TopLevel [[main]]
 
 processor Delay (const int maxDelayLength, const int delayCenter)
 {
-    input  stream float audioIn;
-    output stream float audioOut;
-    input  stream float lfoValue; 
+    input  stream float<2> audioIn;
+    output stream float<2> audioOut;
+    input  stream float lfoValue;
 
-    float[maxDelayLength] buffer;
+    float<2>[maxDelayLength] buffer;
     wrap<maxDelayLength> readPos, writePos;
 
     void run()
