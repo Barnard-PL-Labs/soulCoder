@@ -1,7 +1,7 @@
 graph TopLevel [[main]]
 {
-    input stream float32 in;
-    output stream float32 out;
+    input stream float<2> in;
+    output stream float<2> out;
     input event
     {
         float rateHzIn   [[ min: 0.1,  max: 100,  init:  10,  name: "LFO Rate",  unit: "hz",  step: 0.1 ]];
@@ -34,8 +34,8 @@ graph TopLevel [[main]]
 
 processor Delay (const int maxDelayLength)
 {
-    input  stream float32 in;
-    output stream float32 out;
+    input  stream float<2> in;
+    output stream float<2> out;
     input  stream float oscValue;
 
     float[maxDelayLength] buffer;
@@ -56,7 +56,7 @@ processor Delay (const int maxDelayLength)
             advance();
         }
     }
-   
+
 }
 
 processor TempoRateMapper

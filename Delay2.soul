@@ -1,0 +1,26 @@
+processor Delay2 (const int maxDelayLength)
+{
+    input  stream float<2> in;
+    output stream float<2> out;
+    input  stream float oscValue;
+
+    float<2>[maxDelayLength] buffer;
+    wrap<maxDelayLength> readPos, writePos;
+
+    void run()
+    {
+        loop
+        {
+            let delaySamples = int (processor.frequency * (oscValue * 25) / 1000.0f);
+            readPos = wrap<maxDelayLength> (writePos - delaySamples);
+            buffer[writePos] = in;
+            out << (buffer[readPos]);
+
+            ++readPos;
+            ++writePos;
+
+            advance();
+        }
+    }
+
+}
