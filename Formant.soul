@@ -1,0 +1,20 @@
+// Handle vowel input
+processor Formant()
+{
+    input event float vowel, freq_max_in, freq_min_in, gain_max_in, gain_min_in;
+    output event float freq, gain;
+
+    float freq_max, freq_min, gain_max, gain_min, percentage;
+
+    event vowel       (float val) { percentage = val; onUpdate(); }
+    event freq_max_in (float val) { freq_max = val; onUpdate(); }
+    event freq_min_in (float val) { freq_min = val; onUpdate(); }
+    event gain_max_in (float val) { gain_max = val; onUpdate(); }
+    event gain_min_in (float val) { gain_min = val; onUpdate(); }
+
+    void onUpdate()
+    {
+        freq << lerp (freq_min, freq_max, percentage * (1.0f / 100.0f));
+        gain << soul::dBtoGain( lerp (gain_min, gain_max, percentage * (1.0f / 100.0f)) );
+    }
+}

@@ -1,0 +1,72 @@
+
+graph Formants()
+{
+    input stream float<2> in;
+    output stream float<2> out;
+
+    input tp.type type;
+    input event float vowel, intensity;
+
+    namespace eq = soul::filters(float<2>)::tpt::simper_eq;
+
+    let
+    {
+        tp = TypeProcessor;
+
+        f1 = Formant;
+        f2 = Formant;
+        f3 = Formant;
+        f4 = Formant;
+
+        eq1 = eq::Processor;
+        eq2 = eq::Processor;
+        eq3 = eq::Processor;
+        eq4 = eq::Processor;
+        eq_mode = Values(float[] (2)); //bandpass filter
+        eq_q = Values(float[] (10.0f));
+
+        gain = soul::gain::FixedGain (float<2>, 0.8f);
+    }
+
+    connection
+    {
+        vowel -> f1.vowel, f2.vowel, f3.vowel, f4.vowel;
+
+        tp.freq_min[0] -> f1.freq_min_in;
+        tp.freq_max[0] -> f1.freq_max_in;
+        tp.gain_min[0] -> f1.gain_min_in;
+        tp.gain_max[0] -> f1.gain_max_in;
+
+        tp.freq_min[1] -> f2.freq_min_in;
+        tp.freq_max[1] -> f2.freq_max_in;
+        tp.gain_min[1] -> f2.gain_min_in;
+        tp.gain_max[1] -> f2.gain_max_in;
+
+        tp.freq_min[2] -> f3.freq_min_in;
+        tp.freq_max[2] -> f3.freq_max_in;
+        tp.gain_min[2] -> f3.gain_min_in;
+        tp.gain_max[2] -> f3.gain_max_in;
+
+        tp.freq_min[3] -> f4.freq_min_in;
+        tp.freq_max[3] -> f4.freq_max_in;
+        tp.gain_min[3] -> f4.gain_min_in;
+        tp.gain_max[3] -> f4.gain_max_in;
+
+        // Pass frequency and gain information to bandpass filter
+        f1.freq -> eq1.frequencyIn;
+        f2.freq -> eq2.frequencyIn;
+        f3.freq -> eq3.frequencyIn;
+        f4.freq -> eq4.frequencyIn;
+
+        f1.gain -> eq1.gainIn;
+        f2.gain -> eq2.gainIn;
+        f3.gain -> eq3.gainIn;
+        f4.gain -> eq4.gainIn;
+        eq_mode.out -> eq1.modeIn, eq2.modeIn, eq3.modeIn, eq4.modeIn;
+        intensity -> eq1.qualityIn, eq2.qualityIn, eq3.qualityIn, eq4.qualityIn;
+
+        //input & ouput connection
+        in -> eq1.in, eq2.in, eq3.in, eq4.in;
+        eq1.out, eq2.out, eq3.out, eq4.out -> gain -> out;
+    }
+}
