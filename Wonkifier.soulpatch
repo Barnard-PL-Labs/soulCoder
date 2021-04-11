@@ -10,6 +10,12 @@
         "manufacturer":     "Your Company Name",
         "isInstrument":     false,
 
-        "source":           [ "Wonkifier.soul" ]
+        "source":           [ "Wonkifier.soul",
+                              "Delay1.soul",
+                              "Formant.soul",
+                              "Formants.soul",
+                              "Mixer.soul",
+                              "TypeProcessor.soul",
+                              "Values.soul" ]
     }
 }
