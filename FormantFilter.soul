@@ -2,40 +2,37 @@ graph FormantFilter [[main]]
 {
     input stream float<2> in;
     output stream float<2> out;
-    
-    input 
+
+    input
     {
         mixer.mix dryWetMix  [[ name:"Dry Wet Mix", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]];
         formants.vowel       [[ name:"Vowel", min: 0, max: 100, init: 50, unit: "%", step: 1 ]];
         formants.intensity   [[ name:"Intensity", min: 1, max: 25, init: 15, step: 1 ]];
         formants.type        [[ name:"Type", min: 0, max: 2, init: 0, text: "u-a|a-i|o-e" ]];
 
-        delay.delayWet       [[ min: 0,  max: 100,  init:  0,  name: "Delay Wet", unit:"%",  step: 1 ]];
-        delay.delayLength    [[ min: 0,  max: 1000, init:  50,  name: "Delay Length",   unit: "ms", step: 1 ]];
-        delay.delayFeedback  [[ min: 0,  max: 100,  init:  25,  name: "Delay Feedback", unit: "%",  step: 1 ]];
-
-        chorus.rateHzIn   [[ min: 0.1,  max: 15,  init:  10,  name: "LFO Rate",  unit: "hz",  step: 0.1 ]];
-        chorus.depthIn    [[ min: 0.1,    max: 2,  init:  0,  name: "Mod Depth", unit: "ms",  step: 0.1 ]];
+        //delay.delayWet       [[ min: 0,  max: 100,  init:  0,  name: "Delay Wet", unit:"%",  step: 1 ]];
+        //delay.delayLength    [[ min: 0,  max: 1000, init:  50,  name: "Delay Length",   unit: "ms", step: 1 ]];
+        //delay.delayFeedback  [[ min: 0,  max: 100,  init:  25,  name: "Delay Feedback", unit: "%",  step: 1 ]];
     }
 
-    let 
+    let
     {
         formants = Formants;
         mixer = Mixer;
         gain = soul::gain::FixedGain (float<2>, 0.80f);
-        chorus = Chorus;
-        delay = Delay;
-    } 
-    
+        //delay = DelayGraph;
+    }
+
     connection
     {
         in -> gain -> mixer.in1;
+        in -> formants.in;
 
-        in -> formants.in; 
-        formants.out -> chorus.audioIn;
-        chorus.audioOut -> delay.in;
-        
-        delay.out -> mixer.in2;
+        //formants.out -> delay.audioIn;
+        //delay.audioOut -> mixer.in2;
+
+        formants.out -> mixer.in2;
+
         mixer.out -> out;
     }
 }
@@ -53,7 +50,7 @@ graph Formants()
     let
     {
         tp = TypeProcessor;
-        
+
         f1 = Formant;
         f2 = Formant;
         f3 = Formant;
@@ -68,33 +65,32 @@ graph Formants()
 
         gain = soul::gain::FixedGain (float<2>, 0.8f);
     }
-    
+
     connection
-    {   
+    {
         vowel -> f1.vowel, f2.vowel, f3.vowel, f4.vowel;
 
-        //resolve type to frequency chart
         tp.freq_min[0] -> f1.freq_min_in;
         tp.freq_max[0] -> f1.freq_max_in;
         tp.gain_min[0] -> f1.gain_min_in;
-        tp.gain_max[0] -> f1.gain_max_in;       
-        
+        tp.gain_max[0] -> f1.gain_max_in;
+
         tp.freq_min[1] -> f2.freq_min_in;
         tp.freq_max[1] -> f2.freq_max_in;
         tp.gain_min[1] -> f2.gain_min_in;
-        tp.gain_max[1] -> f2.gain_max_in;       
-        
+        tp.gain_max[1] -> f2.gain_max_in;
+
         tp.freq_min[2] -> f3.freq_min_in;
         tp.freq_max[2] -> f3.freq_max_in;
         tp.gain_min[2] -> f3.gain_min_in;
-        tp.gain_max[2] -> f3.gain_max_in;       
-        
+        tp.gain_max[2] -> f3.gain_max_in;
+
         tp.freq_min[3] -> f4.freq_min_in;
         tp.freq_max[3] -> f4.freq_max_in;
         tp.gain_min[3] -> f4.gain_min_in;
-        tp.gain_max[3] -> f4.gain_max_in;       
-        
-        //formant filter setup
+        tp.gain_max[3] -> f4.gain_max_in;
+
+        // Pass frequency and gain information to bandpass filter
         f1.freq -> eq1.frequencyIn;
         f2.freq -> eq2.frequencyIn;
         f3.freq -> eq3.frequencyIn;
@@ -113,13 +109,14 @@ graph Formants()
     }
 }
 
+// Resolve type parameter to frequency band based on formant table
 processor TypeProcessor()
 {
     input event float type;
     output event float freq_min[4], freq_max[4], gain_min[4], gain_max[4];
-    
+
     event type (float type) {
-        if (type == 0.0f) { 
+        if (type == 0.0f) {
             freq_min << float[] (350.0f, 600.0f, 2400.0f, 2675.0f);
             gain_min << float[] (0.0f, -20.0f, -32.0f, -28.0f);
             freq_max << float[] (600.0f, 1040.0f, 2250.0f, 2450.0f);
@@ -140,6 +137,7 @@ processor TypeProcessor()
     }
 }
 
+// Handle vowel input
 processor Formant()
 {
     input event float vowel, freq_max_in, freq_min_in, gain_max_in, gain_min_in;
@@ -160,7 +158,7 @@ processor Formant()
     }
 }
 
-// referenced from SOUL/example/Resonator.soul
+// Referenced from soul_libray
 processor Values (float[] vals)
 {
     output event float out[vals.size];
