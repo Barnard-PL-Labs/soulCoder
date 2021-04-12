@@ -13,11 +13,8 @@
         "source":           [ "Wonkifier.soul",
                               "Delay1.soul",
                               "Delay2.soul",
-                              "TempoRateMapper.soul",
-                              "Formant.soul",
                               "Formants.soul",
                               "Mixer.soul",
-                              "TypeProcessor.soul",
                               "Values.soul" ]
     }
 }

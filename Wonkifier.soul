@@ -12,26 +12,7 @@ graph Wonkifier  [[main]]
         formants.vowel       [[ name:"Vowel", min: 0, max: 100, init: 50, unit: "%", step: 1 ]];
         formants.intensity   [[ name:"Intensity", min: 1, max: 25, init: 15, step: 1 ]];
         formants.type        [[ name:"Type", min: 0, max: 2, init: 0, text: "u-a|a-i|o-e" ]];
-
     }
-
-
-
-
-    input event
-    {
-        float rateHzIn1   [[ min: 0.1,  max: 100,  init:  10,  name: "LFO 1 Rate",  unit: "hz",  step: 0.1 ]];
-        float depthIn1    [[ min: 1,    max: 100,  init:  15,  name: "Mod Depth 1", unit: "ms",  step: 1 ]];
-        float rateTempoIn  [[ name: "Rate (Tempo)", min: 0, max: 14, init: 0, text: "1/64|1/32|1/16T|1/16|1/16D|1/8T|1/8|1/8D|1/4|1/4D|1/2|1/1|2/1|4/1|8/1"]];
-    }
-
-    input osc.shapeIn;
-    input osc.positionIn;
-    input osc.transportStateIn;
-    input osc.rateModeIn;
-    input osc.syncIn;
-    input osc.polarityIn;
-
 
     input event
     {
@@ -39,16 +20,6 @@ graph Wonkifier  [[main]]
         float depthIn    [[ min: 1,    max: 30,  init:  15,  name: "Mod Depth 2", unit: "ms",  step: 1 ]];
         float stereoOn   [[ min: 0,    max: 1,   init:  0,   name: "Stereo Chorus Off/On", text: "Off|On"]];
     }
-
-
-    let delay2 = Delay2(100000);
-    namespace LFO = soul::oscillators::lfo;
-    let osc = LFO::Processor (LFO::Shape::triangle, LFO::Polarity::unipolar, 1., 10.);
-    let tempoRateMapper = TempoRateMapper;
-
-
-
-
 
 
     let
@@ -70,41 +41,20 @@ graph Wonkifier  [[main]]
         lfo.out -> delay.lfoValue;
     }
 
-
-    connection
-    {
-        rateHzIn1 -> osc.rateHzIn;
-        depthIn1 -> osc.depthIn;
-        osc.out -> delay2.oscValue;
-        rateTempoIn  -> tempoRateMapper.rateTempoIn;
-        tempoRateMapper.out  -> osc.rateTempoIn;
-        //in -> delay.in;
-        //delay.out->out;
-    }
-
-
-
     connection
     {
         in -> gain -> mixer.in1;
         in -> formants.in;
 
-
         formants.out -> mixer.in2;
 
-
-
         mixer.out -> delay.audioIn;
-        mixer.out -> delay2.in;
+        // mixer.out -> WaveShaper.in;
 
-        delay2.out -> delay.audioIn;
+        // delay2.out -> delay.audioIn;
 
         delay.audioOut -> out;
-
-
     }
-
-
 
 }
 

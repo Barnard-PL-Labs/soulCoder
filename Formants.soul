@@ -1,4 +1,3 @@
-
 graph Formants()
 {
     input stream float<2> in;
@@ -68,5 +67,57 @@ graph Formants()
         //input & ouput connection
         in -> eq1.in, eq2.in, eq3.in, eq4.in;
         eq1.out, eq2.out, eq3.out, eq4.out -> gain -> out;
+    }
+}
+
+
+
+// Handle vowel input
+processor Formant()
+{
+    input event float vowel, freq_max_in, freq_min_in, gain_max_in, gain_min_in;
+    output event float freq, gain;
+
+    float freq_max, freq_min, gain_max, gain_min, percentage;
+
+    event vowel       (float val) { percentage = val; onUpdate(); }
+    event freq_max_in (float val) { freq_max = val; onUpdate(); }
+    event freq_min_in (float val) { freq_min = val; onUpdate(); }
+    event gain_max_in (float val) { gain_max = val; onUpdate(); }
+    event gain_min_in (float val) { gain_min = val; onUpdate(); }
+
+    void onUpdate()
+    {
+        freq << lerp (freq_min, freq_max, percentage * (1.0f / 100.0f));
+        gain << soul::dBtoGain( lerp (gain_min, gain_max, percentage * (1.0f / 100.0f)) );
+    }
+}
+
+
+// Resolve type parameter to frequency band based on formant table
+processor TypeProcessor()
+{
+    input event float type;
+    output event float freq_min[4], freq_max[4], gain_min[4], gain_max[4];
+
+    event type (float type) {
+        if (type == 0.0f) {
+            freq_min << float[] (350.0f, 600.0f, 2400.0f, 2675.0f);
+            gain_min << float[] (0.0f, -20.0f, -32.0f, -28.0f);
+            freq_max << float[] (600.0f, 1040.0f, 2250.0f, 2450.0f);
+            gain_max << float[] (0.0f, -7.0f, -9.0f, -9.0f);
+        }
+        if (type == 1.0f){
+            freq_min << float[] (600.0f, 1040.0f, 2250.0f, 2450.0f);
+            freq_max << float[] (250.0f, 1750.0f, 2600.0f, 3050.0f);
+            gain_min << float[] (0.0f, -7.0f, -9.0f, -9.0f);
+            gain_max << float[] (-5.0f, -30.0f, -16.0f, -22.0f);
+        }
+        if (type == 2.0f){
+            freq_min << float[] (400.0f, 750.0f, 2400.0f, 2600.0f);
+            freq_max << float[] (450.0f, 1620.0f, 2400.0f, 2800.0f);
+            gain_min << float[] (-7.0f, -11.0f, -21.0f, -20.0f);
+            gain_max << float[] (0.0f, -12.0f, -9.0f, -12.0f);
+        }
     }
 }
