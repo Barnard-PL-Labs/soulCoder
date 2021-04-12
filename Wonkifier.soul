@@ -37,6 +37,7 @@ graph Wonkifier  [[main]]
     {
         float rateHzIn   [[ min: 0.1,  max: 20,  init:  10,  name: "LFO 2 Rate",  unit: "hz",  step: 0.1 ]];
         float depthIn    [[ min: 1,    max: 30,  init:  15,  name: "Mod Depth 2", unit: "ms",  step: 1 ]];
+        float stereoOn   [[ min: 0,    max: 1,   init:  0,   name: "Stereo Chorus Off/On", text: "Off|On"]];
     }
 
 
@@ -65,6 +66,7 @@ graph Wonkifier  [[main]]
     {
         rateHzIn -> lfo.rateHzIn;
         depthIn -> lfo.depthIn;
+        stereoOn -> delay.stereoOn;
         lfo.out -> delay.lfoValue;
     }
 

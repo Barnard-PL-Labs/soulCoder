@@ -63,12 +63,10 @@ processor Delay (const int maxDelayLength, const int delayCenter)
         }
     }
 
-
     float[maxDelayLength] bufferL, bufferR;
     wrap<maxDelayLength> readPosL, readPosR, writePos;
     int delaySamplesL, delaySamplesR;
     bool stereo;
-
 
     void run()
     {
