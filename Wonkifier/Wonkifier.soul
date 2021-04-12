@@ -9,6 +9,7 @@ graph Wonkifier  [[main]]
     input
     {
         mixer.mix            [[ name:"Dry Wet Mix", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]];
+        formants.lfoOn       [[ min: 0,    max: 1,   init:  0,   name: "vowel lfo", text: "Off|On"]];
         formants.vowel       [[ name:"Vowel", min: 0, max: 100, init: 50, unit: "%", step: 1 ]];
         formants.intensity   [[ name:"Intensity", min: 1, max: 25, init: 15, step: 1 ]];
         formants.type        [[ name:"Type", min: 0, max: 2, init: 0, text: "u-a|a-i|o-e" ]];
@@ -39,37 +40,14 @@ graph Wonkifier  [[main]]
         stereoOn -> chorus.stereoOn;
         lfo.out -> chorus.lfoValue;
         
-        lfo.out -> formants.vowel_lfo;
-
         //audio connection
         in -> gain -> mixer.in1;
         in -> formants.in;
 
-        // formants.out -> chorus.audioIn;
-        // chorus.audioOut -> mixer.in2;
-        
-        formants.out -> mixer.in2;
+        formants.out -> chorus.audioIn;
+        chorus.audioOut -> mixer.in2;
+        // formants.out -> mixer.in2; // test connection 
 
         mixer.out -> out;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// comment
