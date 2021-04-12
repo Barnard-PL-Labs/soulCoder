@@ -1,0 +1,48 @@
+processor Delay (const int maxDelayLength, const int delayCenter)
+{
+    input  stream float<2> audioIn;
+    output stream float<2> audioOut;
+    input  stream float lfoValue;
+    input event float stereoOn;
+
+    event stereoOn(float on)
+    {
+        if (on == 1) { stereo = true; }
+        else { stereo = false; }
+    }
+
+    float<2>[maxDelayLength] buffer;
+    wrap<maxDelayLength> readPosL, readPosR, writePos;
+    int delaySamplesL, delaySamplesR;
+    bool stereo;
+
+    void run()
+    {
+        loop
+        {
+            delaySamplesL = max (1, int (processor.frequency * ((delayCenter + (lfoValue * 100)) / 1000.0f)));
+            readPosL = wrap<maxDelayLength> (writePos - delaySamplesL);
+            if (stereo)
+            {
+                delaySamplesR = max (1, int (processor.frequency * ((delayCenter + ((-1*lfoValue) * 100)) / 1000.0f)));
+                readPosR = wrap<maxDelayLength> (writePos - delaySamplesR);
+            }
+            else
+            {
+                delaySamplesR = delaySamplesL;
+                readPosR = readPosL;
+            }
+
+            buffer[writePos][0] = audioIn[0];
+            buffer[writePos][1] = audioIn[1];
+            let audioL = (buffer[readPosL][0] + audioIn[0]) / 2;
+            let audioR = (buffer[readPosR][1] + audioIn[1]) / 2;
+            audioOut << float<2> (audioL, audioR);
+            ++readPosL;
+            ++readPosR;
+            ++writePos;
+
+            advance();
+        }
+    }
+}

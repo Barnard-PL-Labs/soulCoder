@@ -1,0 +1,14 @@
+// Referenced from soul_libray
+processor Values (float[] vals)
+{
+    output event float out[vals.size];
+
+    void run()
+    {
+        for (wrap<vals.size> i){
+            out[i] << vals[i];
+        }
+
+        advance();
+    }
+}
