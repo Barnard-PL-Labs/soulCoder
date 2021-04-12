@@ -5,6 +5,7 @@ graph Formants()
 
     input tp.type type;
     input event float vowel, intensity;
+    input stream float vowel_lfo;
 
     namespace eq = soul::filters(float<2>)::tpt::simper_eq;
 
@@ -30,6 +31,7 @@ graph Formants()
     connection
     {
         vowel -> f1.vowel, f2.vowel, f3.vowel, f4.vowel;
+        vowel_lfo -> f1.vowel_lfo, f2.vowel_lfo,f3.vowel_lfo, f4.vowel_lfo;
 
         tp.freq_min[0] -> f1.freq_min_in;
         tp.freq_max[0] -> f1.freq_max_in;
@@ -71,11 +73,11 @@ graph Formants()
 }
 
 
-
 // Handle vowel input
 processor Formant()
 {
     input event float vowel, freq_max_in, freq_min_in, gain_max_in, gain_min_in;
+    input stream float vowel_lfo;
     output event float freq, gain;
 
     float freq_max, freq_min, gain_max, gain_min, percentage;
@@ -88,8 +90,27 @@ processor Formant()
 
     void onUpdate()
     {
-        freq << lerp (freq_min, freq_max, percentage * (1.0f / 100.0f));
-        gain << soul::dBtoGain( lerp (gain_min, gain_max, percentage * (1.0f / 100.0f)) );
+        // freq << lerp (freq_min, freq_max, percentage * (1.0f / 100.0f));
+        // gain << soul::dBtoGain( lerp (gain_min, gain_max, percentage * (1.0f / 100.0f)) );
+    }
+    
+    void run()
+    {
+        loop{
+
+            // console << vowel;
+            // console << abs(vowel_lfo) * 10000 ;
+            // console << percentage;
+            // console << "\n";
+            
+            // freq << lerp (freq_min, freq_max, vowel_lfo * (1.0f / 100.0f));
+            // gain << soul::dBtoGain( lerp (gain_min, gain_max, vowel_lfo * (1.0f / 100.0f)) );
+            
+            freq << lerp (freq_min, freq_max, (abs(vowel_lfo)*10000) * (1.0f / 100.0f));
+            gain << soul::dBtoGain( lerp (gain_min, gain_max, (abs(vowel_lfo)*10000) * (1.0f / 100.0f)) );
+
+            advance();
+        }
     }
 }
 
