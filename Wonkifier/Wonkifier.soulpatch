@@ -1,0 +1,20 @@
+
+{
+    "soulPatchV1":
+    {
+        "ID":               "com.yourcompany.Wonkifier",
+        "version":          "0.1",
+        "name":             "Wonkifier",
+        "description":      "This is a SOUL Patch called Wonkifier!",
+        "category":         "effect",
+        "manufacturer":     "Your Company Name",
+        "isInstrument":     false,
+
+        "source":           [ "Wonkifier.soul",
+                              "StereoChorus.soul",
+                              "Formants.soul",
+                              "Mixer.soul",
+                              "Values.soul",
+                              "ADSREnvelope.soul" ]
+    }
+}
