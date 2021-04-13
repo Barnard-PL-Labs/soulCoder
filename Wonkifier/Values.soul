@@ -1,4 +1,4 @@
-// Referenced from soul_libray
+// Referenced from SOUL/Library
 processor Values (float[] vals)
 {
     output event float out[vals.size];

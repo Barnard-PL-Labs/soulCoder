@@ -12,9 +12,9 @@
 
         "source":           [ "Wonkifier.soul",
                               "StereoChorus.soul",
-                              "WaveShaper.soul",
                               "Formants.soul",
                               "Mixer.soul",
-                              "Values.soul" ]
+                              "Values.soul",
+                              "ADSREnvelope.soul" ]
     }
 }
