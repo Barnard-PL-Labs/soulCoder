@@ -1,5 +1,5 @@
 
-graph Wonkifier  [[main]]
+graph Wonkifier [[main]]
 {
 
     input stream float<2> in;
@@ -9,18 +9,18 @@ graph Wonkifier  [[main]]
     input
     {
         mixer.mix            [[ name:"Dry Wet Mix", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]];
+        formants.vType       [[ min: 0,    max: 2,   init:  0,   name: "Vowel Type", text: "Manual|LFO|Envelop"]];
+        formants.sType        [[ name:"Vowel Sound", min: 0, max: 2, init: 0, text: "u-a|a-i|o-e" ]];
         formants.vowel       [[ name:"Vowel", min: 0, max: 100, init: 50, unit: "%", step: 1 ]];
         formants.intensity   [[ name:"Intensity", min: 1, max: 25, init: 15, step: 1 ]];
-        formants.type        [[ name:"Type", min: 0, max: 2, init: 0, text: "u-a|a-i|o-e" ]];
     }
 
     input event
     {
-        float rateHzIn   [[ min: 0.1,  max: 20,  init:  10,  name: "LFO 2 Rate",  unit: "hz",  step: 0.1 ]];
-        float depthIn    [[ min: 1,    max: 30,  init:  15,  name: "Mod Depth 2", unit: "ms",  step: 1 ]];
+        float rateHzIn   [[ min: 0.1,  max: 20,  init:  0,  name: "LFO Rate",  unit: "hz",  step: 0.1 ]];
+        float depthIn    [[ min: 1,    max: 15,  init:  0,  name: "Mod Depth", unit: "ms",  step: 0.1 ]];
         float stereoOn   [[ min: 0,    max: 1,   init:  0,   name: "Stereo Chorus Off/On", text: "Off|On"]];
     }
-
 
     let
     {
@@ -28,52 +28,48 @@ graph Wonkifier  [[main]]
         mixer = Mixer;
         gain = soul::gain::FixedGain (float<2>, 0.80f);
 
+        env = ADSREnvelope;
+        mc = MonoConverter;
 
-        delay = Delay(100000, 30);
+        chorus = StereoChorus(100000, 30);
         lfo = soul::oscillators::lfo::Processor (0, 1, 15.0f, 10.0f);
     }
 
     connection
     {
+        //chorus parameter
         rateHzIn -> lfo.rateHzIn;
         depthIn -> lfo.depthIn;
-        stereoOn -> delay.stereoOn;
-        lfo.out -> delay.lfoValue;
-    }
+        stereoOn -> chorus.stereoOn;
+        lfo.out -> chorus.lfoValue;
+        
+        in -> mc.in;
+        mc.out -> env.triggerLevel;
+        env.envelopeLevel -> formants.vowel_env;
 
-    connection
-    {
+        //audio connection
         in -> gain -> mixer.in1;
         in -> formants.in;
 
-        formants.out -> mixer.in2;
+        formants.out -> chorus.audioIn;
+        chorus.audioOut -> mixer.in2;
+        // formants.out -> mixer.in2; // test connection 
 
-        mixer.out -> delay.audioIn;
-        // mixer.out -> WaveShaper.in;
-
-        // delay2.out -> delay.audioIn;
-
-        delay.audioOut -> out;
+        mixer.out -> out;
     }
-
 }
 
+processor MonoConverter 
+{
+    input stream float<2> in;
+    output stream float out;
 
+    void run(){
+        loop{
+            
+            out << in[0];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// comment
+            advance();
+        }
+    }
+}

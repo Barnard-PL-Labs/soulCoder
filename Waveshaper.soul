@@ -1,44 +1,11 @@
-graph TopLevel [[main]]
-{
-    input stream float<2> in;
-    output stream float<2> out;
-    input event
-    {
-        float rateHzIn   [[ min: 0.1,  max: 100,  init:  10,  name: "LFO Rate",  unit: "hz",  step: 0.1 ]];
-        float depthIn    [[ min: 1,    max: 100,  init:  15,  name: "Mod Depth", unit: "ms",  step: 1 ]];
-        float rateTempoIn  [[ name: "Rate (Tempo)", min: 0, max: 14, init: 0, text: "1/64|1/32|1/16T|1/16|1/16D|1/8T|1/8|1/8D|1/4|1/4D|1/2|1/1|2/1|4/1|8/1"]];
-    }
-    input osc.shapeIn;
-    input osc.positionIn;
-    input osc.transportStateIn;
-    input osc.rateModeIn;
-    input osc.syncIn;
-    input osc.polarityIn;
-
-    let delay = Delay(100000);
-    namespace LFO = soul::oscillators::lfo;
-    let osc = LFO::Processor (LFO::Shape::triangle, LFO::Polarity::unipolar, 1., 10.);
-    let tempoRateMapper = TempoRateMapper;
-
-    connection
-    {
-        rateHzIn -> osc.rateHzIn;
-        depthIn -> osc.depthIn;
-        osc.out -> delay.oscValue;
-        rateTempoIn  -> tempoRateMapper.rateTempoIn;
-        tempoRateMapper.out  -> osc.rateTempoIn;
-        in -> delay.in;
-        delay.out->out;
-    }
-}
-
-processor Delay (const int maxDelayLength)
+//waveshaper
+processor WaveShaper (const int maxDelayLength)
 {
     input  stream float<2> in;
     output stream float<2> out;
     input  stream float oscValue;
 
-    float[maxDelayLength] buffer;
+    float<2>[maxDelayLength] buffer;
     wrap<maxDelayLength> readPos, writePos;
 
     void run()
@@ -58,6 +25,7 @@ processor Delay (const int maxDelayLength)
     }
 
 }
+
 
 processor TempoRateMapper
 {

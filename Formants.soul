@@ -3,14 +3,19 @@ graph Formants()
     input stream float<2> in;
     output stream float<2> out;
 
-    input tp.type type;
-    input event float vowel, intensity;
+    input tp.type sType;
+    input event float vowel, intensity, vType;
+    input stream float vowel_lfo, vowel_env;
+    // input event float vType;
 
     namespace eq = soul::filters(float<2>)::tpt::simper_eq;
 
     let
     {
-        tp = TypeProcessor;
+        tp = SoundTypeProcessor;
+
+        lfo = soul::oscillators::lfo::Processor (0, 0, 3.0f, 0.5f);
+        vtl = VowelToLfoPrams;
 
         f1 = Formant;
         f2 = Formant;
@@ -29,8 +34,21 @@ graph Formants()
 
     connection
     {
+        //parameter pass to Formants
         vowel -> f1.vowel, f2.vowel, f3.vowel, f4.vowel;
+        vType -> f1.vType, f2.vType, f3.vType, f4.vType;
+        lfo.out -> f1.vowel_lfo, f2.vowel_lfo,f3.vowel_lfo, f4.vowel_lfo;
+        vowel_env -> f1.vowel_env, f2.vowel_env, f3.vowel_env, f4.vowel_env;
+        
+        //vowel to lfo
+        vowel -> vtl.vowel;
+        intensity -> vtl.intensity;
+        vType -> vtl.lfoOn;
 
+        vtl.rateHz -> lfo.rateHzIn;
+        vtl.depth -> lfo.depthIn;
+
+        //resolve user parameter value to formant table
         tp.freq_min[0] -> f1.freq_min_in;
         tp.freq_max[0] -> f1.freq_max_in;
         tp.gain_min[0] -> f1.gain_min_in;
@@ -71,16 +89,28 @@ graph Formants()
 }
 
 
-
-// Handle vowel input
+// resolve parameters to frequency and gain
 processor Formant()
 {
-    input event float vowel, freq_max_in, freq_min_in, gain_max_in, gain_min_in;
+    input event float vowel, vType, freq_max_in, freq_min_in, gain_max_in, gain_min_in;
+    input stream float vowel_lfo, vowel_env;
     output event float freq, gain;
 
     float freq_max, freq_min, gain_max, gain_min, percentage;
+    bool manual, lfo, envelop;
+    
+    event vType(float val) { 
+        if (val == 0){ manual = true; lfo = false; envelop = false;}
+        if (val == 1){ manual = false; lfo = true; envelop = false;}
+        if (val == 2){ manual = false; lfo = false; envelop = true;}
+     }
 
-    event vowel       (float val) { percentage = val; onUpdate(); }
+    event vowel(float val) { 
+        if(manual){
+            percentage = val; onUpdate(); 
+        }
+    }
+
     event freq_max_in (float val) { freq_max = val; onUpdate(); }
     event freq_min_in (float val) { freq_min = val; onUpdate(); }
     event gain_max_in (float val) { gain_max = val; onUpdate(); }
@@ -88,14 +118,54 @@ processor Formant()
 
     void onUpdate()
     {
-        freq << lerp (freq_min, freq_max, percentage * (1.0f / 100.0f));
-        gain << soul::dBtoGain( lerp (gain_min, gain_max, percentage * (1.0f / 100.0f)) );
+        if (manual){
+            freq << lerp (freq_min, freq_max, percentage * (1.0f / 100.0f));
+            gain << soul::dBtoGain( lerp (gain_min, gain_max, percentage * (1.0f / 100.0f)) );
+        }
+    }
+    
+    void run()
+    {
+        loop{
+            if (lfo){
+                // console << vowel_lfo;
+                freq << lerp (freq_min, freq_max, (abs(vowel_lfo)*10000) * (1.0f / 100.0f));
+                gain << soul::dBtoGain( lerp (gain_min, gain_max, (abs(vowel_lfo)*10000) * (1.0f / 100.0f)) );
+            }
+
+            if (envelop){
+                console << vowel_env;
+                freq << lerp (freq_min, freq_max, (abs(vowel_env)*100) * (1.0f / 100.0f));
+                gain << soul::dBtoGain( lerp (gain_min, gain_max, (abs(vowel_env)*100) * (1.0f / 100.0f)) );
+            }
+            
+            console << "\n";
+
+            advance();
+        }
     }
 }
 
+// Resolve vowel/intensity input to LFO rate/depth
+processor VowelToLfoPrams(){
+    input event float vowel, intensity, lfoOn;
+    output event float rateHz, depth;
+    
+    bool lfo;
+
+    event lfoOn (float on){ lfo = (on == 1) ? true:false; }
+
+    event vowel(float val){
+        rateHz << lerp(0.0f , 8.0f, val/100);
+    }
+
+    event intensity(float val){
+        depth << lerp(0.0f , 5.0f, val/100);
+    }
+}
 
 // Resolve type parameter to frequency band based on formant table
-processor TypeProcessor()
+processor SoundTypeProcessor()
 {
     input event float type;
     output event float freq_min[4], freq_max[4], gain_min[4], gain_max[4];
