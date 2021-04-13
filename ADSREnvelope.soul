@@ -4,7 +4,7 @@ processor ADSREnvelope
 {
     input stream float triggerLevel;
     output stream float envelopeLevel;
-    input event float attack, decay, sustain, release, sensitivity;
+    input event float attack, decay, sustain, release, sensitivity, threshhold;
 
     event attack (float f)
     {
@@ -42,6 +42,11 @@ processor ADSREnvelope
         velocitySensitivity = f * 0.01f;
     }
 
+    event threshhold (float f)
+    {
+        threshholdLevel =  f * (1.0f / 100.0f);
+    }
+
     const float sampleRate = float (processor.frequency);
 
     float64 attackRamp = 0.01;
@@ -50,6 +55,7 @@ processor ADSREnvelope
     float64 releaseMultiplier = 0.99991;
     float32 velocitySensitivity = 0.0f;
     float64 targetValue = 1.0;
+    float   threshholdLevel = 0.5;
 
     void calculateTargetValue (float noteVelocity)
     {
@@ -70,8 +76,10 @@ processor ADSREnvelope
         loop
         {
 
-            if (triggerLevel > 0)
+            if (triggerLevel > threshholdLevel)
             {
+
+
                 // Use the value of the trigger to modify our target value
                 calculateTargetValue (triggerLevel);
 
@@ -81,7 +89,7 @@ processor ADSREnvelope
                     envelopeLevel << float(value);
                     advance();
 
-                    if (triggerLevel <= 0)
+                    if (triggerLevel <= threshholdLevel)
                         break;
                 }
 
@@ -89,7 +97,7 @@ processor ADSREnvelope
                 value = min (value, targetValue);
 
                 // Decay stage
-                while (value > targetValue * sustainLevel && triggerLevel > 0)
+                while (value > targetValue * sustainLevel && triggerLevel > threshholdLevel)
                 {
                     value = value * decayMultiplier;
                     envelopeLevel << float (value);
@@ -97,15 +105,18 @@ processor ADSREnvelope
                 }
 
                 // Sustain stage
-                while (triggerLevel > 0)
-                {
-                    envelopeLevel << float (value);
-                    advance();
-                }
+                // while (triggerLevel > threshholdLevel)
+                // {
+                    // envelopeLevel << float (value);
+                    // advance();
+                // }
             }
 
+            console << triggerLevel;
+            // console << threshholdLevel;
+            console << "\n";
+
             value *= releaseMultiplier;
-            // console << value << "\n";
             envelopeLevel << float (value);
             advance();
         }

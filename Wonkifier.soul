@@ -26,13 +26,15 @@ graph Wonkifier [[main]]
     {
         formants = Formants;
         mixer = Mixer;
-        gain = soul::gain::FixedGain (float<2>, 0.80f);
-
-        env = ADSREnvelope;
-        mc = MonoConverter;
+        gain1 = soul::gain::FixedGain (float<2>, 0.70f);
+        gain2 = soul::gain::FixedGain (float<2>, 0.70f);
 
         chorus = StereoChorus(100000, 30);
         lfo = soul::oscillators::lfo::Processor (0, 1, 15.0f, 10.0f);
+        
+        dcFilter1 = OutputFilter(-2.0f);
+        dcFilter2 = OutputFilter(-4.0f);
+        
     }
 
     connection
@@ -43,32 +45,42 @@ graph Wonkifier [[main]]
         stereoOn -> chorus.stereoOn;
         lfo.out -> chorus.lfoValue;
         
-        in -> mc.in;
-        mc.out -> env.triggerLevel;
-        env.envelopeLevel -> formants.vowel_env;
 
         //audio connection
-        in -> gain -> mixer.in1;
-        in -> formants.in;
+        in -> gain1 -> mixer.in1;
+        in -> gain2 -> formants.in;
 
-        formants.out -> chorus.audioIn;
-        chorus.audioOut -> mixer.in2;
+        formants.out -> dcFilter1.audioIn;
+        dcFilter1.audioOut -> chorus.audioIn;
+        chorus.audioOut -> dcFilter2.audioIn;
+        dcFilter2.audioOut -> mixer.in2;
         // formants.out -> mixer.in2; // test connection 
 
         mixer.out -> out;
+
     }
 }
 
-processor MonoConverter 
+// referenced SOUL/example
+// Remove DC from the output, apply some gain reduction
+processor OutputFilter(float reduction)
 {
-    input stream float<2> in;
-    output stream float out;
+    input stream float<2>  audioIn;
+    output stream float<2> audioOut;
 
-    void run(){
-        loop{
-            
-            out << in[0];
+    void run()
+    {
+        let gain = soul::dBtoGain (reduction);
 
+        float<2> previousIn, previousOut;
+
+        loop
+        {
+            let y = audioIn - previousIn + 0.997f * previousOut;
+            previousIn = audioIn;
+            previousOut = y;
+
+            audioOut << gain * y;
             advance();
         }
     }

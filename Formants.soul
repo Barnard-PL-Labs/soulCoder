@@ -17,6 +17,9 @@ graph Formants()
         lfo = soul::oscillators::lfo::Processor (0, 0, 3.0f, 0.5f);
         vtl = VowelToLfoPrams;
 
+        mc = MonoConverter;
+        env = ADSREnvelope;
+
         f1 = Formant;
         f2 = Formant;
         f3 = Formant;
@@ -36,17 +39,24 @@ graph Formants()
     {
         //parameter pass to Formants
         vowel -> f1.vowel, f2.vowel, f3.vowel, f4.vowel;
-        vType -> f1.vType, f2.vType, f3.vType, f4.vType;
-        lfo.out -> f1.vowel_lfo, f2.vowel_lfo,f3.vowel_lfo, f4.vowel_lfo;
-        vowel_env -> f1.vowel_env, f2.vowel_env, f3.vowel_env, f4.vowel_env;
+        vType -> f1.vType, f2.vType, f3.vType, f4.vType;       //vowel type
         
-        //vowel to lfo
+        //vowel to LFO
         vowel -> vtl.vowel;
         intensity -> vtl.intensity;
         vType -> vtl.lfoOn;
 
         vtl.rateHz -> lfo.rateHzIn;
         vtl.depth -> lfo.depthIn;
+        
+        lfo.out -> f1.vowel_lfo, f2.vowel_lfo,f3.vowel_lfo, f4.vowel_lfo;
+
+        //vowel to envelope
+        vowel -> env.threshhold;
+        in -> mc.in;
+        mc.out -> env.triggerLevel;
+
+        env.envelopeLevel -> f1.vowel_env, f2.vowel_env, f3.vowel_env, f4.vowel_env;
 
         //resolve user parameter value to formant table
         tp.freq_min[0] -> f1.freq_min_in;
@@ -134,12 +144,13 @@ processor Formant()
             }
 
             if (envelop){
-                console << vowel_env;
+                // console << vowel_env;
+                // console << "\n";
+
                 freq << lerp (freq_min, freq_max, (abs(vowel_env)*100) * (1.0f / 100.0f));
                 gain << soul::dBtoGain( lerp (gain_min, gain_max, (abs(vowel_env)*100) * (1.0f / 100.0f)) );
             }
             
-            console << "\n";
 
             advance();
         }
@@ -188,6 +199,22 @@ processor SoundTypeProcessor()
             freq_max << float[] (450.0f, 1620.0f, 2400.0f, 2800.0f);
             gain_min << float[] (-7.0f, -11.0f, -21.0f, -20.0f);
             gain_max << float[] (0.0f, -12.0f, -9.0f, -12.0f);
+        }
+    }
+}
+
+
+processor MonoConverter 
+{
+    input stream float<2> in;
+    output stream float out;
+
+    void run(){
+        loop{
+            let mono = (in[0] + in[1])/2;
+            out << mono;
+
+            advance();
         }
     }
 }
