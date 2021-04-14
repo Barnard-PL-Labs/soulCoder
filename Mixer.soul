@@ -5,7 +5,7 @@ processor Mixer()
     input stream float mix;
 
     output stream float<2> out;
-    
+
     void run()
     {
         loop
@@ -14,6 +14,67 @@ processor Mixer()
             let in1_gain = 1.0f - in2_gain;
 
             out << (in1 * in1_gain) + (in2 * in2_gain);
+
+            advance();
+        }
+    }
+}
+
+
+
+processor GainMatch()
+{
+    input stream float<2>  audioIn1;
+    input stream float<2>  audioIn2;
+    output stream float<2> audioOut;
+
+
+    int counter;
+    float input1Sum;
+    float input2Sum;
+    float input1Avg;
+    float input2Avg;
+    float gain;
+
+    void init()
+    {
+        counter = 0;
+        input1Sum = 0;
+        input2Sum = 0;
+        gain = 1;
+    }
+
+    void run()
+    {
+
+        loop
+        {
+
+            /*
+            THIS IS MY FAILED ATTEMPT AT GAIN MATCHING.
+            INSTEAD OF ALL THIS, I'M JUST REDUCING THE OUTPUT VOLUME BY
+            HALF. I TESTED IT IN ABLETON AND IT SOUNDS DECENT.
+
+            if (counter < 1000) {
+                input1Sum += float((0.5)*( abs(audioIn1[0]) + abs(audioIn1[1]) ));
+                input2Sum += float((0.5)*( abs(audioIn2[0]) + abs(audioIn2[1]) ));
+                counter += 1;
+            } else {
+                input1Avg = input1Sum/counter;
+                input2Avg = input2Sum/counter;
+
+                counter = 0;
+                input1Sum = 0;
+                input2Sum = 0;
+
+                gain = input1Avg/input2Avg;
+                console << gain << "\n";
+            }
+            */
+
+            let audioL = float(0.5 * audioIn2[0]);
+            let audioR = float(0.5 * audioIn2[1]);
+            audioOut << float<2> (audioL, audioR);
 
             advance();
         }

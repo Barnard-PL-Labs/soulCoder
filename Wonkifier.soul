@@ -30,9 +30,10 @@ graph Wonkifier [[main]]
 
         chorus = StereoChorus(100000, 30);
         lfo = soul::oscillators::lfo::Processor (0, 1, 15.0f, 10.0f);
-        
+
         dcFilter = OutputFilter(-2.0f);
-        
+
+        gainMatch = GainMatch();
     }
 
     connection
@@ -41,7 +42,7 @@ graph Wonkifier [[main]]
         rateHzIn -> lfo.rateHzIn;
         depthIn -> lfo.depthIn;
         lfo.out -> chorus.lfoValue;
-        
+
 
         //audio connection
         in -> gain1 -> mixer.in1;
@@ -50,7 +51,11 @@ graph Wonkifier [[main]]
         formants.out -> dcFilter.audioIn;
         dcFilter.audioOut -> mixer.in2;
 
-        mixer.out -> out;
+        //mixer.out -> out;
+
+        in -> gainMatch.audioIn1;
+        mixer.out -> gainMatch.audioIn2;
+        gainMatch.audioOut -> out;
 
     }
 }
