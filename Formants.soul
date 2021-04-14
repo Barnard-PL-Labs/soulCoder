@@ -18,7 +18,6 @@ graph Formants()
 
         mc = MonoConverter;
         env = ADSREnvelope;
-        // vte = VowelToEnv;
 
         f1 = Formant;
         f2 = Formant;

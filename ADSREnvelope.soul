@@ -4,43 +4,7 @@ processor ADSREnvelope
 {
     input stream float triggerLevel;
     output stream float envelopeLevel;
-    input event float attack, decay, sustain, release, sensitivity, threshhold;
-
-    event attack (float f)
-    {
-        let seconds = 0.001 + 9.999 * pow (f * 0.01f, 4.0f);
-        let secondsToLinearStep = 1.0 / (sampleRate * seconds);
-
-        attackRamp = secondsToLinearStep;
-    }
-
-    event decay (float f)
-    {
-        let seconds = 0.001 + 9.999 * pow (f * 0.01f, 4.0f);
-        let inverse = 1.0 / (sampleRate * seconds);
-        let secondsToMultiplier = pow (0.0001, inverse);
-
-        decayMultiplier = secondsToMultiplier;
-    }
-
-    event sustain (float f)
-    {
-        sustainLevel = float64 (f) * 0.01f;
-    }
-
-    event release (float f)
-    {
-        let seconds = 0.001 + 9.999 * pow (f * 0.01f, 4.0f);
-        let inverse = 1.0 / (sampleRate * seconds);
-        let secondsToMultiplier = pow (0.0001, inverse);
-
-        releaseMultiplier = secondsToMultiplier;
-    }
-
-    event sensitivity (float f)
-    {
-        velocitySensitivity = f * 0.05f;
-    }
+    input event float threshhold;
 
     event threshhold (float f)
     {
@@ -49,11 +13,11 @@ processor ADSREnvelope
 
     const float sampleRate = float (processor.frequency);
 
-    float64 attackRamp = 0.01;
+    float64 attackRamp = 0.1;
     float64 decayMultiplier = 0.995;
     float64 sustainLevel = 1.0;
     float64 releaseMultiplier = 0.99991;
-    float32 velocitySensitivity = 0.0f;
+    float32 velocitySensitivity = 0.03f;
     float64 targetValue = 1.0;
     float   threshholdLevel = 0.5;
 
