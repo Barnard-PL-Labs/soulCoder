@@ -39,12 +39,12 @@ processor ADSREnvelope
 
     event sensitivity (float f)
     {
-        velocitySensitivity = f * 0.01f;
+        velocitySensitivity = f * 0.05f;
     }
 
     event threshhold (float f)
     {
-        threshholdLevel =  f * (1.0f / 100.0f);
+        threshholdLevel =  min(1.0f, f * (1.0f / 1000.0f));
     }
 
     const float sampleRate = float (processor.frequency);
@@ -79,7 +79,6 @@ processor ADSREnvelope
             if (triggerLevel > threshholdLevel)
             {
 
-
                 // Use the value of the trigger to modify our target value
                 calculateTargetValue (triggerLevel);
 
@@ -105,16 +104,16 @@ processor ADSREnvelope
                 }
 
                 // Sustain stage
-                // while (triggerLevel > threshholdLevel)
-                // {
-                    // envelopeLevel << float (value);
-                    // advance();
-                // }
+                while (triggerLevel > threshholdLevel)
+                {
+                    envelopeLevel << float (value);
+                    advance();
+                }
             }
 
-            console << triggerLevel;
+            // console << triggerLevel;
             // console << threshholdLevel;
-            console << "\n";
+            // console << "\n";
 
             value *= releaseMultiplier;
             envelopeLevel << float (value);

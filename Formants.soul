@@ -6,7 +6,6 @@ graph Formants()
     input tp.type sType;
     input event float vowel, intensity, vType;
     input stream float vowel_lfo, vowel_env;
-    // input event float vType;
 
     namespace eq = soul::filters(float<2>)::tpt::simper_eq;
 
@@ -19,6 +18,7 @@ graph Formants()
 
         mc = MonoConverter;
         env = ADSREnvelope;
+        // vte = VowelToEnv;
 
         f1 = Formant;
         f2 = Formant;
@@ -37,9 +37,9 @@ graph Formants()
 
     connection
     {
-        //parameter pass to Formants
+        //user parameter pass to Formants
         vowel -> f1.vowel, f2.vowel, f3.vowel, f4.vowel;
-        vType -> f1.vType, f2.vType, f3.vType, f4.vType;       //vowel type
+        vType -> f1.vType, f2.vType, f3.vType, f4.vType;     
         
         //vowel to LFO
         vowel -> vtl.vowel;
@@ -53,6 +53,7 @@ graph Formants()
 
         //vowel to envelope
         vowel -> env.threshhold;
+        // intensity -> env.attack, env.release;
         in -> mc.in;
         mc.out -> env.triggerLevel;
 
@@ -104,23 +105,23 @@ processor Formant()
 {
     input event float vowel, vType, freq_max_in, freq_min_in, gain_max_in, gain_min_in;
     input stream float vowel_lfo, vowel_env;
-    output event float freq, gain;
+    output event float freq, gain, Q;
 
     float freq_max, freq_min, gain_max, gain_min, percentage;
     bool manual, lfo, envelop;
     
     event vType(float val) { 
-        if (val == 0){ manual = true; lfo = false; envelop = false;}
-        if (val == 1){ manual = false; lfo = true; envelop = false;}
-        if (val == 2){ manual = false; lfo = false; envelop = true;}
-     }
+        if      (val == 0){ manual = true; lfo = false; envelop = false;}
+        else if (val == 1){ manual = false; lfo = true; envelop = false;}
+        else if (val == 2){ manual = false; lfo = false; envelop = true;}
+    }
 
     event vowel(float val) { 
         if(manual){
             percentage = val; onUpdate(); 
         }
     }
-
+    
     event freq_max_in (float val) { freq_max = val; onUpdate(); }
     event freq_min_in (float val) { freq_min = val; onUpdate(); }
     event gain_max_in (float val) { gain_max = val; onUpdate(); }
@@ -138,19 +139,14 @@ processor Formant()
     {
         loop{
             if (lfo){
-                // console << vowel_lfo;
                 freq << lerp (freq_min, freq_max, (abs(vowel_lfo)*10000) * (1.0f / 100.0f));
                 gain << soul::dBtoGain( lerp (gain_min, gain_max, (abs(vowel_lfo)*10000) * (1.0f / 100.0f)) );
             }
 
-            if (envelop){
-                // console << vowel_env;
-                // console << "\n";
-
+            else if (envelop){
                 freq << lerp (freq_min, freq_max, (abs(vowel_env)*100) * (1.0f / 100.0f));
                 gain << soul::dBtoGain( lerp (gain_min, gain_max, (abs(vowel_env)*100) * (1.0f / 100.0f)) );
             }
-            
 
             advance();
         }
