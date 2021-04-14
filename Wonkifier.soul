@@ -13,6 +13,7 @@ graph Wonkifier [[main]]
         formants.sType        [[ name:"Vowel Sound", min: 0, max: 2, init: 0, text: "u-a|a-i|o-e" ]];
         formants.vowel       [[ name:"Vowel", min: 0, max: 100, init: 50, unit: "%", step: 1 ]];
         formants.intensity   [[ name:"Intensity", min: 1, max: 25, init: 15, step: 1 ]];
+        formants.rateTempoIn     [[ name: "Rate (Tempo)", min: 0, max: 14, init: 0, text: "1/64|1/32|1/16T|1/16|1/16D|1/8T|1/8|1/8D|1/4|1/4D|1/2|1/1|2/1|4/1|8/1"]];
     }
 
     input event

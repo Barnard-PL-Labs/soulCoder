@@ -4,7 +4,7 @@ graph Formants()
     output stream float<2> out;
 
     input tp.type sType;
-    input event float vowel, intensity, vType;
+    input event float vowel, intensity, vType, rateTempoIn;
     input stream float vowel_lfo, vowel_env;
 
     namespace eq = soul::filters(float<2>)::tpt::simper_eq;
@@ -12,6 +12,7 @@ graph Formants()
     let
     {
         tp = SoundTypeProcessor;
+        tempoRateMapper = TempoRateMapper;
 
         lfo = soul::oscillators::lfo::Processor (0, 0, 3.0f, 0.5f);
         vtl = VowelToLfoPrams;
@@ -38,16 +39,18 @@ graph Formants()
     {
         //user parameter pass to Formants
         vowel -> f1.vowel, f2.vowel, f3.vowel, f4.vowel;
-        vType -> f1.vType, f2.vType, f3.vType, f4.vType;     
-        
+        vType -> f1.vType, f2.vType, f3.vType, f4.vType;
+
         //vowel to LFO
         vowel -> vtl.vowel;
         intensity -> vtl.intensity;
         vType -> vtl.lfoOn;
 
-        vtl.rateHz -> lfo.rateHzIn;
+        rateTempoIn  -> tempoRateMapper.rateTempoIn;
+        tempoRateMapper.out  -> lfo.rateHzIn;
+        //vtl.rateHz -> lfo.rateHzIn;
         vtl.depth -> lfo.depthIn;
-        
+
         lfo.out -> f1.vowel_lfo, f2.vowel_lfo,f3.vowel_lfo, f4.vowel_lfo;
 
         //vowel to envelope
@@ -108,19 +111,19 @@ processor Formant()
 
     float freq_max, freq_min, gain_max, gain_min, percentage;
     bool manual, lfo, envelop;
-    
-    event vType(float val) { 
+
+    event vType(float val) {
         if      (val == 0){ manual = true; lfo = false; envelop = false;}
         else if (val == 1){ manual = false; lfo = true; envelop = false;}
         else if (val == 2){ manual = false; lfo = false; envelop = true;}
     }
 
-    event vowel(float val) { 
+    event vowel(float val) {
         if(manual){
-            percentage = val; onUpdate(); 
+            percentage = val; onUpdate();
         }
     }
-    
+
     event freq_max_in (float val) { freq_max = val; onUpdate(); }
     event freq_min_in (float val) { freq_min = val; onUpdate(); }
     event gain_max_in (float val) { gain_max = val; onUpdate(); }
@@ -133,7 +136,7 @@ processor Formant()
             gain << soul::dBtoGain( lerp (gain_min, gain_max, percentage * (1.0f / 100.0f)) );
         }
     }
-    
+
     void run()
     {
         loop{
@@ -156,7 +159,7 @@ processor Formant()
 processor VowelToLfoPrams(){
     input event float vowel, intensity, lfoOn;
     output event float rateHz, depth;
-    
+
     bool lfo;
 
     event lfoOn (float on){ lfo = (on == 1) ? true:false; }
@@ -199,7 +202,7 @@ processor SoundTypeProcessor()
 }
 
 
-processor MonoConverter 
+processor MonoConverter
 {
     input stream float<2> in;
     output stream float out;
@@ -211,5 +214,38 @@ processor MonoConverter
 
             advance();
         }
+    }
+}
+
+
+
+
+processor TempoRateMapper
+{
+    input event float32 rateTempoIn;
+    output event float32 out;
+
+    event rateTempoIn (float v)
+    {
+        let div = int(floor(v));
+        var qnScalar = 0.f;
+
+        if      (div == 0)  qnScalar = (64.0   / 4.0); // 1 sixty-fourth of a beat
+        else if (div == 1)  qnScalar = (32.0   / 4.0); // 1 thirty-second of a beat
+        else if (div == 2)  qnScalar = (24.0   / 4.0); // 1 sixteenth note triplet
+        else if (div == 3)  qnScalar = (16.0   / 4.0); // 1 sixteenth note
+        else if (div == 4)  qnScalar = (12.0   / 4.0); // 1 dotted sixteenth note
+        else if (div == 5)  qnScalar = (9.0    / 4.0); // 1 eighth note triplet
+        else if (div == 6)  qnScalar = (8.0    / 4.0); // 1 eighth note
+        else if (div == 7)  qnScalar = (6.0    / 4.0); // 1 dotted eighth note
+        else if (div == 8)  qnScalar = (4.0    / 4.0); // 1 quater note / 1 beat @ 4/4
+        else if (div == 9)  qnScalar = (3.0    / 4.0); // 1 dotted quater note @ 4/4
+        else if (div == 10) qnScalar = (2.0    / 4.0); // 2 beats @ 4/4
+        else if (div == 11) qnScalar = (1.0    / 4.0); // 1 bar @ 4/4
+        else if (div == 12) qnScalar = (0.5    / 4.0); // 2 bars @ 4/4
+        else if (div == 13) qnScalar = (0.25   / 4.0); // 4 bars @ 4/4
+        else if (div == 14) qnScalar = (0.125  / 4.0); // 8 bars @ 4/4
+
+        out << qnScalar;
     }
 }
