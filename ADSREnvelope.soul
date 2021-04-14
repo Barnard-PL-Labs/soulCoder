@@ -1,5 +1,6 @@
 // referenced from SOUL/example/PadSynth.soul
 
+
 processor ADSREnvelope
 {
     input stream float triggerLevel;
@@ -8,16 +9,16 @@ processor ADSREnvelope
 
     event threshhold (float f)
     {
-        threshholdLevel =  min(1.0f, f * (1.0f / 1000.0f));
+        threshholdLevel =  f * (1.0f / 10000.0f);
     }
 
     const float sampleRate = float (processor.frequency);
 
-    float64 attackRamp = 0.1;
+    float64 attackRamp = 1.0;
     float64 decayMultiplier = 0.995;
-    float64 sustainLevel = 1.0;
+    float64 sustainLevel = 0.0;
     float64 releaseMultiplier = 0.99991;
-    float32 velocitySensitivity = 0.03f;
+    float32 velocitySensitivity = 0.1f;
     float64 targetValue = 1.0;
     float   threshholdLevel = 0.5;
 
@@ -75,11 +76,13 @@ processor ADSREnvelope
                 }
             }
 
-            // console << triggerLevel;
-            // console << threshholdLevel;
+            // console << value;
             // console << "\n";
 
             value *= releaseMultiplier;
+            
+            // console << value;
+
             envelopeLevel << float (value);
             advance();
         }

@@ -153,7 +153,8 @@ processor Formant()
 }
 
 // Resolve vowel/intensity input to LFO rate/depth
-processor VowelToLfoPrams(){
+processor VowelToLfoPrams()
+{
     input event float vowel, intensity, lfoOn;
     output event float rateHz, depth;
     
@@ -169,6 +170,7 @@ processor VowelToLfoPrams(){
         depth << lerp(0.0f , 5.0f, val/100);
     }
 }
+
 
 // Resolve type parameter to frequency band based on formant table
 processor SoundTypeProcessor()

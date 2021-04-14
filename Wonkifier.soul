@@ -25,13 +25,14 @@ graph Wonkifier [[main]]
     {
         formants = Formants;
         mixer = Mixer;
-        gain1 = soul::gain::FixedGain (float<2>, 0.80f);
-        gain2 = soul::gain::FixedGain (float<2>, 0.80f);
+        gain1 = soul::gain::FixedGain (float<2>, 0.75f);
+        gain2 = soul::gain::FixedGain (float<2>, 0.75f);
 
         chorus = StereoChorus(100000, 30);
         lfo = soul::oscillators::lfo::Processor (0, 1, 15.0f, 10.0f);
 
         dcFilter = OutputFilter(-2.0f);
+        dcFilter2 = OutputFilter(-2.0f);
 
         gainMatch = GainMatch();
     }
@@ -47,7 +48,8 @@ graph Wonkifier [[main]]
         //audio connection
         in -> gain1 -> mixer.in1;
         in -> gain2 -> chorus.audioIn;
-        chorus.audioOut -> formants.in;
+        chorus.audioOut -> dcFilter2.audioIn;
+        dcFilter2.audioOut -> formants.in;
         formants.out -> dcFilter.audioIn;
         dcFilter.audioOut -> mixer.in2;
 
