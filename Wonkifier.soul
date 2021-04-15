@@ -5,11 +5,10 @@ graph Wonkifier [[main]]
     input stream float<2> in;
     output stream float<2> out;
 
-
     input
     {
-        mixer.mix            [[ name:"Dry Wet Mix", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]];
-        formants.vType       [[ min: 0,    max: 2,   init:  0,   name: "Vowel Type", text: "Manual|LFO|Envelop"]];
+        mixer.mix dryWet           [[ name:"Dry Wet Mix", min: 0, max: 100, init: 0, unit: "%", step: 0.1 ]];
+        formants.vType       [[ min: 0,    max: 2,   init:  0,   name: "Vowel Type", text: "Manual|LFO|Envelope"]];
         formants.sType        [[ name:"Vowel Sound", min: 0, max: 2, init: 0, text: "u-a|a-i|o-e" ]];
         formants.vowel       [[ name:"Vowel", min: 0, max: 100, init: 50, unit: "%", step: 1 ]];
         formants.intensity   [[ name:"Intensity", min: 1, max: 25, init: 15, step: 1 ]];
@@ -17,8 +16,8 @@ graph Wonkifier [[main]]
 
     input event
     {
-        float rateHzIn   [[ min: 0.1,  max: 20,  init:  0,  name: "LFO Rate",  unit: "hz",  step: 0.1 ]];
-        float depthIn    [[ min: 1,    max: 15,  init:  0,  name: "Mod Depth", unit: "ms",  step: 0.1 ]];
+        float rateHzIn   [[ min: 0.1,  max: 20,  init:  0,  name: "Chorus Rate",  unit: "hz",  step: 0.1 ]];
+        float depthIn    [[ min: 1,    max: 15,  init:  0,  name: "Chorus Depth", unit: "ms",  step: 0.1 ]];
     }
 
     let
@@ -39,6 +38,10 @@ graph Wonkifier [[main]]
 
     connection
     {
+        //intensity
+        dryWet -> mixer.mix;
+        dryWet -> gainMatch.dryWet;
+
         //chorus parameter
         rateHzIn -> lfo.rateHzIn;
         depthIn -> lfo.depthIn;

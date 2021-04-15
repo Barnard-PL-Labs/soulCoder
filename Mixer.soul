@@ -28,6 +28,7 @@ processor GainMatch()
     input stream float<2>  audioIn2;
     output stream float<2> audioOut;
 
+    input stream float dryWet;
 
     int counter;
     float input1Sum;
@@ -72,8 +73,8 @@ processor GainMatch()
             }
             */
 
-            let audioL = float(0.5 * audioIn2[0]);
-            let audioR = float(0.5 * audioIn2[1]);
+            let audioL = float((0.999 - (0.002*dryWet)) * audioIn2[0]);
+            let audioR = float((0.999 - (0.002*dryWet)) * audioIn2[1]);
             audioOut << float<2> (audioL, audioR);
 
             advance();
