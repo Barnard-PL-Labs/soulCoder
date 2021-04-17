@@ -1,5 +1,5 @@
 // referenced from SOUL/example/PadSynth.soul
-
+// TODO: implement proper gain tracking, ramp output value.
 
 processor ADSREnvelope
 {
